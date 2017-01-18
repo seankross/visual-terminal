@@ -1,0 +1,82 @@
+<html>
+  <head>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.6/p5.js"></script>
+    <script src="sketch.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.terminal/0.11.23/js/jquery.terminal.min.js"></script>
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/jquery.terminal/0.11.23/css/jquery.terminal.min.css" rel="stylesheet"/>
+  </head>
+  <body>
+  	<div id="term_demo" class="terminal" style="height: 200px;"></div>
+  	<script type="text/javascript">
+  		class Folder {
+  			constructor(name_, parent_, folders = {}, files = {}) {
+  				this.name_ = name_;
+  				this.parent_ = parent_;
+  				this.folders = folders;
+  				this.files = files;
+  			}
+  		}
+
+  		var root = new Folder("", "");
+
+  		// path is an array of folder names. It preresents an absolute path.
+  		function createFolder (path) {
+  			// TODO: check if parent exists
+
+
+  		}
+
+  		function doesFolderExist (path) {
+  			var current = root;
+  			for (var i = 0; i < path.length; i++) {
+  				if(path[i] in current) {
+  					current = current[path[i]];
+  				} else {
+  					return false;
+  				}
+  			};
+  			return true;
+  		}
+
+  		
+  		root.folders.Users = new Folder("Users", root);
+		root.folders.Users.folders.me = new Folder("me", root.folders.Users);
+
+		var home = ["Users", "me"];
+  		var wd = ["Users", "me"];
+		jQuery(function($, undefined) {
+		    $('#term_demo').terminal(function(command, term) {
+		    	var cmd = command.split(" ");
+		        if (cmd[0] === 'pwd' && cmd.length === 1) {
+		        	if(wd.length === 0){
+		        		term.echo("/");
+		        	} else {
+		        		term.echo("/".concat(wd.join("/")).concat("/"));
+		        	}
+			    } else if (cmd[0] === "cd") {
+			    	if(cmd.length === 1 || cmd[1] === "~"){
+			    		// TODO: check if home exists
+			    		wd = home;
+			    	} else if(cmd[1] === "/") {
+			    		wd = [];
+			    	} else {
+			    		//
+			    	}
+			    } else if (cmd[0] === "") {
+			    	term.echo("");
+			    } else {
+			        term.echo('unknown command');
+			    }
+		        
+		    }, {
+		    	greetings: 'Visual Shell',
+		    	clear: true,
+		        height: 200,
+		        width: 450,
+		        prompt: "> "
+		    });
+		});
+  	</script>
+  </body>
+</html>
