@@ -27,33 +27,52 @@
 
   		}
 
-  		function doesFolderExist (path) {
+  		function doesFolderExist (path_) {
   			var current = root;
-  			for (var i = 0; i < path.length; i++) {
-  				if(path[i] in current) {
-  					current = current[path[i]];
-  				} else {
-  					return false;
-  				}
-  			};
-  			return true;
+        var path = path_.slice();
+        while (path.length > 0) {
+          var next = path.shift();
+          if (next in current.folders) {
+            current = current.folders[next];
+          } else {
+            return false;
+          }
+        }
+        return true;
   		}
-
   		
-  		root.folders.Users = new Folder("Users", root);
-		root.folders.Users.folders.me = new Folder("me", root.folders.Users);
+  	root.folders["Users"] = new Folder("Users", root);
+		root.folders["Users"].folders["me"] = new Folder("me", root.folders["Users"]);
 
 		var home = ["Users", "me"];
-  		var wd = ["Users", "me"];
+  	var wd = ["Users", "me"];
+
+    // path is one string deliminated by slashes
+    // this function returns an array of strings
+    function makeAbsolutePath (path) {
+      var path_arr = path.split("/");
+      if (path_arr[0] === "") {
+        path_arr.shift();
+      } else if(path_arr[0] === "~") {
+        path_arr.slice(1);
+        path_arr = home.concat(path_arr);
+      } else {
+        path_arr = wd.concat(path_arr);
+      }
+      return path_arr;
+    }
+
 		jQuery(function($, undefined) {
 		    $('#term_demo').terminal(function(command, term) {
 		    	var cmd = command.split(" ");
-		        if (cmd[0] === 'pwd' && cmd.length === 1) {
-		        	if(wd.length === 0){
-		        		term.echo("/");
-		        	} else {
-		        		term.echo("/".concat(wd.join("/")).concat("/"));
-		        	}
+          // pwd
+		      if (cmd[0] === 'pwd' && cmd.length === 1) {
+          	if(wd.length === 0){
+          		term.echo("/");
+          	} else {
+          		term.echo("/".concat(wd.join("/")).concat("/"));
+          	}
+          // cd
 			    } else if (cmd[0] === "cd") {
 			    	if(cmd.length === 1 || cmd[1] === "~"){
 			    		// TODO: check if home exists
@@ -61,9 +80,29 @@
 			    	} else if(cmd[1] === "/") {
 			    		wd = [];
 			    	} else {
-			    		//
+			    		var path = makeAbsolutePath(cmd[1]);
+              if (doesFolderExist(path)) {
+                wd = path;
+              } else {
+                term.echo('unknown path');
+              }
 			    	}
-			    } else if (cmd[0] === "") {
+          // mkdir
+			    } else if (cmd[0] === "mkdir") {
+            if (cmd.length === 1 || cmd.length > 2) {
+              term.echo('please enter a valid path to mkdir');
+            } else {
+              var path = makeAbsolutePath(cmd[1]);
+              if (doesFolderExist(makeAbsolutePath(cmd[1]))) {
+                term.echo('that directory already exists');
+              } else {
+                path.pop();
+                if(doesFolderExist(path)){
+
+                }
+              }
+            }
+          } else if (cmd[0] === "") {
 			    	term.echo("");
 			    } else {
 			        term.echo('unknown command');
